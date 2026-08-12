@@ -18,8 +18,6 @@ public class DiscountContext {
                 return new SeasonalSaleStrategy();
             case "STUDENT":
                 return new StudentDiscountStrategy();
-            case "NONE":
-                return new NoDiscountStrategy();
             default:
                 return new NoDiscountStrategy();
         }

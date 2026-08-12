@@ -1,273 +1,340 @@
-# 🎮 Lab 7: Database Connectivity — Game Catalog CRUD
+# 🎮 Lab 7: Game Catalog CRUD Application
 
-**วิชา:** CP353002 Principles of Software Design  
-**เรื่อง:** การเชื่อมต่อฐานข้อมูลด้วย Spring Boot + JPA + JDBC + PostgreSQL  
-**รูปแบบ:** ทำเดี่ยว
+**ชื่อ-นามสกุล:** เพชรภิญโญ ธนศิรินรากร  
+**รหัสนักศึกษา:** 673380073-7  
+**Section:** 2  
+**วิชา:** CP353002 Principles of Software Design
 
----
-
-## 📋 วัตถุประสงค์
-
-1. นักศึกษาสามารถสร้าง Spring Boot Project ด้วยตัวเอง และเชื่อมต่อกับฐานข้อมูล PostgreSQL ได้
-2. นักศึกษาเข้าใจหลักการ MVC (Model-View-Controller) และการประยุกต์ใช้ **GRASP Patterns** (Controller, Low Coupling, High Cohesion, Information Expert)
-3. นักศึกษาเข้าใจและสามารถประยุกต์ใช้ **Design Patterns (Strategy Pattern)** ในการคำนวณราคาสินค้า/ส่วนลดโปรโมชั่น
-4. นักศึกษาเข้าใจและสามารถประยุกต์ใช้ **High-level SOLID Principles** (SRP, OCP, LSP, ISP, DIP) ร่วมกับ **Dependency Injection (DI)** ใน Spring Framework
-5. นักศึกษาสามารถสร้าง Entity, Repository, Service, Strategy, Controller เพื่อทำ CRUD (Create, Read, Update, Delete) ร่วมกับ Spring Data JPA ได้
-6. นักศึกษาสามารถเขียนอธิบายสถาปัตยกรรมซอฟต์แวร์, GRASP Patterns, SOLID Principles, Strategy Pattern และลำดับการทำงาน (Execution Flow) ของระบบได้
+**Document** [Lab 7: Database Connectivity — Game Catalog CRUD](https://docs.google.com/document/d/19CPMPfn8ZG6tyiOJGqi0Wt3XnwkT3BZ4lHYdWE5GshQ/edit?usp=sharing)
 
 ---
 
-## 🎯 โจทย์
+## 📋 ภาพรวมโปรเจค
 
-สร้างเว็บแอปพลิเคชัน **"Game Catalog"** สำหรับจัดการข้อมูลเกม โดยปฏิบัติตามหลักการออกแบบซอฟต์แวร์ (Principles of Software Design), ประยุกต์ใช้ **Strategy Pattern** ในการคำนวณราคา และมีความสามารถ CRUD ครบ 4 ฟังก์ชัน
+เว็บแอปพลิเคชัน **Game Catalog** สำหรับจัดการข้อมูลเกม ออกแบบตามหลักการ **GRASP Patterns**, **SOLID Principles** และ **Strategy Pattern** เชื่อมต่อกับ **PostgreSQL** ผ่าน **Spring Boot + JPA**
 
-**สิ่งที่ให้:**
+### 🎯 ฟีเจอร์หลัก
 
-- ไฟล์ Thymeleaf Templates ครบ 4 หน้า (`list.html`, `add.html`, `edit.html`, `delete.html`)
-- ไฟล์ CSS สำหรับหน้าเว็บ (`style.css`)
-- ไฟล์ `pom.xml` ที่มี dependencies พร้อมใช้งาน
+- ✅ **Create** — เพิ่มเกมใหม่
+- ✅ **Read** — แสดงรายการเกมทั้งหมด พร้อมราคาสุทธิที่คำนวณผ่าน Strategy Pattern
+- ✅ **Update** — แก้ไขข้อมูลเกม
+- ✅ **Delete** — ลบเกม
+- ✅ **Strategy Pattern** — คำนวณส่วนลด 3 รูปแบบ (ไม่ลด, นักศึกษา 10%, เทศกาล 20%)
 
-**สิ่งที่นักศึกษาต้องทำเอง:**
+---
 
-- สร้างโปรเจค Spring Boot (`DemoApplication.java` และ Package structure)
-- สร้าง **Entity** (Model) ที่ map กับตาราง Database
-- สร้าง **Repository** สำหรับเข้าถึงข้อมูล (Data Access Layer)
-- สร้าง **Strategy Package** (`DiscountStrategy`, `NoDiscountStrategy`, `StudentDiscountStrategy`, `SeasonalSaleStrategy`, `DiscountContext`) สำหรับการคำนวณราคาโปรโมชั่น (**Strategy Pattern**)
-- สร้าง **Service** สำหรับจัดการ Business Logic (Service Layer)
-- สร้าง **Controller** ที่ทำ CRUD ครบทุกฟังก์ชัน โดยใช้ **Constructor Injection**
-- เขียนอธิบาย **Software Design, GRASP Patterns, SOLID Principles, Strategy Pattern** และ **Execution Flow** ในเล่มรายงาน
-- ตั้งค่า **Database Connection** ใน `application.properties`
-- ติดตั้งและสร้าง **Database** ใน PostgreSQL
+## 🏗️ สถาปัตยกรรม
 
-### 📛 การตั้งชื่อโปรเจค
-
-นักศึกษาต้องตั้งชื่อโปรเจค Spring Boot ตามรูปแบบ:
+### Layered Architecture
 
 ```
-lab7-{รหัสนักศึกษา}-sec{หมายเลข section}
+┌─────────────────────────────────────┐
+│   Presentation Layer (Controller)   │  → HTTP Request/Response
+├─────────────────────────────────────┤
+│   Business Logic Layer (Service)    │  → Strategy Pattern, Business Rules
+├─────────────────────────────────────┤
+│   Data Access Layer (Repository)    │  → JPA CRUD Operations
+├─────────────────────────────────────┤
+│   Database Layer (PostgreSQL)       │  → Data Storage
+└─────────────────────────────────────┘
 ```
 
-**ตัวอย่าง:**
-
-| รหัสนักศึกษา | Section | ชื่อโปรเจค              |
-| ------------ | ------- | ----------------------- |
-| 653380001-1  | 1       | `lab7-653380001-1-sec1` |
-| 663380123-4  | 2       | `lab7-663380123-4-sec2` |
-
-> ⚠️ **หมายเหตุ:** ใช้รูปแบบนี้เป็นชื่อโฟลเดอร์โปรเจคและชื่อ Git Repository ด้วย
-
----
-
-## 📦 สิ่งที่ Thymeleaf Templates ต้องการ
-
-### Entity Fields
-
-Templates อ้างถึง field ต่อไปนี้ — Entity ของนักศึกษาต้องมี field เหล่านี้:
-
-| Field          | Type      | คำอธิบาย                                                           |
-| -------------- | --------- | ------------------------------------------------------------------ |
-| `id`           | Long      | Primary Key (Auto Generate)                                        |
-| `title`        | String    | ชื่อเกม                                                            |
-| `genre`        | String    | แนวเกม เช่น Action, RPG, Adventure                                 |
-| `platform`     | String    | แพลตฟอร์ม เช่น PC, PS5, Switch                                     |
-| `rating`       | Double    | คะแนน (0.0 - 10.0)                                                 |
-| `releaseDate`  | LocalDate | วันวางจำหน่าย                                                      |
-| `price`        | Double    | ราคาปกติ (บาท)                                                     |
-| `discountType` | String    | ประเภทส่วนลด (Strategy Pattern) เช่น `NONE`, `STUDENT`, `SEASONAL` |
-
-### URL Mappings ที่ Templates ใช้
-
-| HTTP Method | URL                  | หน้าที่              | Template            |
-| ----------- | -------------------- | -------------------- | ------------------- |
-| `GET`       | `/games`             | แสดงรายการเกมทั้งหมด | `games/list`        |
-| `GET`       | `/games/add`         | แสดงฟอร์มเพิ่มเกม    | `games/add`         |
-| `POST`      | `/games/save`        | บันทึกเกมใหม่        | redirect → `/games` |
-| `GET`       | `/games/edit/{id}`   | แสดงฟอร์มแก้ไข       | `games/edit`        |
-| `POST`      | `/games/update/{id}` | อัปเดตข้อมูลเกม      | redirect → `/games` |
-| `GET`       | `/games/delete/{id}` | แสดงหน้ายืนยันลบ     | `games/delete`      |
-| `POST`      | `/games/delete/{id}` | ลบเกม                | redirect → `/games` |
-
-### Model Attributes ที่ Templates ใช้
-
-| Template      | Attribute | Type                | คำอธิบาย                        |
-| ------------- | --------- | ------------------- | ------------------------------- |
-| `list.html`   | `games`   | `List<Game>`        | รายการเกมทั้งหมด                |
-| `list.html`   | `message` | `String` (optional) | ข้อความแจ้งผลสำเร็จ             |
-| `add.html`    | `game`    | `Game` (new)        | Object เปล่าสำหรับ form binding |
-| `edit.html`   | `game`    | `Game` (existing)   | Object ที่ดึงมาจาก DB           |
-| `delete.html` | `game`    | `Game` (existing)   | Object ที่ต้องการลบ             |
-
----
-
-## 📂 โครงสร้างโปรเจค (ที่สมบูรณ์แล้ว) ← ❌ ให้นักศึกษาสร้างโปรเจคเอง
+### โครงสร้างโปรเจค
 
 ```
-src/main/java/com/example/demo/   ← ❌ นักศึกษาสร้างเอง
-├── DemoApplication.java          ← ❌ นักศึกษาสร้างเอง
+src/main/java/com/example/demo/
+├── DemoApplication.java
 ├── model/
-│   └── Game.java                 ← ❌ นักศึกษาสร้างเอง
+│   └── Game.java                      (Entity)
 ├── repository/
-│   └── GameRepository.java       ← ❌ นักศึกษาสร้างเอง
-├── strategy/                     ← ❌ นักศึกษาสร้างเอง (Strategy Pattern)
-│   ├── DiscountStrategy.java (interface)
-│   ├── NoDiscountStrategy.java (ไม่ลดราคา)
-│   ├── StudentDiscountStrategy.java (ลด10%)
-│   ├── SeasonalSaleStrategy.java (ลด20%)
-│   └── DiscountContext.java (switch ตัวเลือก หน้าที่ strategies)
+│   └── GameRepository.java            (JPA Repository)
+├── strategy/                          (Strategy Pattern)
+│   ├── DiscountStrategy.java          (Interface)
+│   ├── NoDiscountStrategy.java        (0%)
+│   ├── StudentDiscountStrategy.java   (10%)
+│   ├── SeasonalSaleStrategy.java      (20%)
+│   └── DiscountContext.java           (Context)
 ├── service/
-│   └── GameService.java          ← ❌ นักศึกษาสร้างเอง
+│   └── GameService.java               (Business Logic)
 └── controller/
-    └── GameController.java       ← ❌ นักศึกษาสร้างเอง
+    └── GameController.java            (MVC Controller)
 
 src/main/resources/
-├── application.properties        ← ❌ นักศึกษาตั้งค่า DB เอง
+├── application.properties
 ├── static/css/
-│   └── style.css                 ← ✅ มีให้แล้ว
+│   └── style.css
 └── templates/games/
-    ├── list.html                 ← ✅ มีให้แล้ว
-    ├── add.html                  ← ✅ มีให้แล้ว
-    ├── edit.html                 ← ✅ มีให้แล้ว
-    └── delete.html               ← ✅ มีให้แล้ว
+    ├── list.html
+    ├── add.html
+    ├── edit.html
+    └── delete.html
 ```
 
 ---
 
-## 🗄️ ฐานข้อมูลและการติดตั้ง PostgreSQL
+## 💻 เทคโนโลยีที่ใช้
 
-โปรเจคนี้ใช้ **PostgreSQL** เป็นฐานข้อมูล นักศึกษาสามารถเลือกติดตั้งตามระบบปฏิบัติการที่ใช้งานดังนี้:
-
----
-
-### 💻 1. การติดตั้งบน Windows
-
-#### วิธีที่ 1: ติดตั้งผ่าน Official Installer (แนะนำสำหรับผู้เริ่มต้น)
-
-1. ดาวน์โหลดโปรแกรมติดตั้งจาก [PostgreSQL Official Download (Windows)](https://www.postgresql.org/download/windows/) (เลือกตัว Installer โดย EnterpriseDB)
-2. รันไฟล์ `.exe` แล้วกด **Next** ตามขั้นตอน
-3. **กำหนด Password สำหรับ User `postgres`** (⚠️ **สำคัญ:** กรุณาจำหรือจดรหัสผ่านนี้ไว้)
-4. กำหนด Port (ค่าเริ่มต้นคือ `5432` หรือตั้งตามต้องการ เช่น `5433`)
-5. ติดตั้ง **pgAdmin 4** (ติดมากับตัว Installer) เพื่อใช้จัดการฐานข้อมูลผ่าน GUI
+| Technology      | Version | Purpose               |
+| --------------- | ------- | --------------------- |
+| Java            | 17+     | Programming Language  |
+| Spring Boot     | 3.x     | Framework             |
+| Spring Data JPA | 3.x     | ORM / Database Access |
+| PostgreSQL      | 16+     | Relational Database   |
+| Thymeleaf       | 3.x     | Template Engine       |
+| Maven           | 3.x     | Build Tool            |
+| Bootstrap       | 5.3     | CSS Framework         |
 
 ---
 
-### 🍎 2. การติดตั้งบน macOS
+## 🚀 การติดตั้งและรัน
 
-#### วิธีที่ 1: ติดตั้งผ่าน Homebrew
+### 1. ข้อกำหนดเบื้องต้น
 
-1. ติดตั้ง PostgreSQL ด้วยคำสั่ง:
-    ```bash
-    brew install postgresql@16
-    ```
-2. เริ่มการทำงานของ PostgreSQL Service:
-    ```bash
-    brew services start postgresql@16
-    ```
-3. (Optional) ติดตั้ง [pgAdmin 4](https://www.pgadmin.org/download/pgadmin-4-macos/) หรือ [DBngin](https://dbngin.com/) / [TablePlus](https://tableplus.com/) เพื่อใช้ GUI จัดการฐานข้อมูล
+- ✅ Java 17 หรือสูงกว่า
+- ✅ PostgreSQL 16 หรือสูงกว่า
+- ✅ Maven 3.x
 
-#### วิธีที่ 2: ติดตั้งผ่าน Postgres.app (ใช้งานง่ายด้วย GUI)
+### 2. ติดตั้ง PostgreSQL
 
-1. ดาวน์โหลดโปรแกรมจาก [Postgres.app](https://postgresapp.com/)
-2. ลากไฟล์ไปวางในโฟลเดอร์ `Applications` แล้วเปิดโปรแกรม
-3. คลิกปุ่ม **Initialize** เพื่อสร้างเซิร์ฟเวอร์ใหม่
-
----
-
-### 🛠️ 3. การสร้าง Database สำหรับ Lab 7
-
-หลังจากติดตั้งและสั่งให้ PostgreSQL ทำงานเรียบร้อยแล้ว ให้สร้าง Database ชื่อ **`lab7demo`** โดยทำได้ 2 วิธี:
-
-#### วิธี A: ใช้ GUI (pgAdmin / TablePlus / DBeaver)
-
-1. เชื่อมต่อไปยัง PostgreSQL Server (Host: `localhost`, Port: `5432`, User: `postgres`)
-2. คลิกขวาที่ **Databases** ➔ เลือก **Create** ➔ **Database...**
-3. ตั้งชื่อ Database Name: `lab7demo` แล้วกด **Save**
-
-#### วิธี B: ใช้ Terminal / Command Line (`psql`)
+**Windows:**
 
 ```bash
-# เข้าใช้งาน psql ด้วยตัวแปร postgres
+# ดาวน์โหลดจาก https://www.postgresql.org/download/windows/
+# ติดตั้ง pgAdmin 4 พร้อมกัน
+```
+
+**macOS:**
+
+```bash
+brew install postgresql@16
+brew services start postgresql@16
+```
+
+### 3. สร้าง Database
+
+```bash
+# เข้า psql
 psql -U postgres
 
-# คำสั่ง SQL สร้างฐานข้อมูล (อย่าลืมเครื่องหมาย ;)
+# สร้าง database
 CREATE DATABASE lab7demo;
-
-# ตรวจสอบรายการฐานข้อมูล
-\l
 
 # ออกจาก psql
 \q
 ```
 
----
+### 4. ตั้งค่า Environment Variable
 
-### ⚙️ 4. ตัวอย่างการตั้งค่าใน `src/main/resources/application.properties`
+[`application.properties`](src/main/resources/application.properties)
 
-เมื่อสร้าง Database เรียบร้อยแล้ว ให้นำข้อมูลการเชื่อมต่อมาใส่ใน `application.properties`:
-
-```properties
-spring.application.name=demo
-
-# Database Connection Settings
-spring.datasource.url=jdbc:postgresql://localhost:5432/lab7demo
-spring.datasource.username=postgres
-spring.datasource.password=YOUR_PASSWORD_HERE
-
-# JPA / Hibernate Settings
-spring.jpa.show-sql=true
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+```
+spring.datasource.password=your_password_here
 ```
 
-> ⚠️ **หมายเหตุ:** หากกำหนด Port ตอนติดตั้งเป็น `5433` ให้เปลี่ยน URL เป็น `jdbc:postgresql://localhost:5433/lab7demo`
+### 5. รันโปรเจค
 
-## 📝 สิ่งที่ต้องส่ง
+```bash
+# Clone repository (ถ้ามี)
+git clone <repository-url>
+cd Lab07-673380073-7-sec2/src
 
-1. **ลิ้งค์ Git Repository** — Push โปรเจคที่ทำเสร็จขึ้น GitHub/GitLab ส่วนตัว
-2. **ไฟล์ PDF เล่มรายงาน** อธิบายขั้นตอนการทำงาน พร้อมแคปภาพประกอบ ดังนี้:
-    - **ส่วนที่ 1: Software Design & Principles Explanation (เขียนอธิบาย)**
-        - 🧠 **อธิบายสถาปัตยกรรมและ GRASP Patterns:** เขียนอธิบายการแบ่งหน้าที่ของคลาส (Entity, Repository, Service, Controller) ตามหลัก **GRASP Patterns** (เช่น Controller Pattern, High Cohesion, Low Coupling, Information Expert, Indirection)
-        - 🎯 **อธิบาย High-Level SOLID Principles:** เขียนอธิบายการประยุกต์ใช้หลักการ SOLID (SRP, OCP, LSP, ISP, DIP) ในระบบ
-        - 🧩 **อธิบาย Strategy Pattern:** เขียนอธิบายการประยุกต์ใช้ **Strategy Pattern** ในการคำนวณส่วนลดราคาเกม (`DiscountStrategy`, `NoDiscountStrategy`, `StudentDiscountStrategy`, `SeasonalSaleStrategy`, `DiscountContext`) พร้อมประโยชน์ด้าน Open/Closed Principle (OCP)
-        - 🏗️ **อธิบาย Layered Architecture:** เขียนอธิบายว่าทำไมต้องแยก Service Layer ออกจาก Controller และ Repository ประโยชน์ด้าน **Low Coupling** และ **High Cohesion**
-        - 🔄 **อธิบาย Execution Flow:** เขียนอธิบายลำดับการทำงาน (Flow) เมื่อมี HTTP Request เข้ามาจาก Browser จนไปถึงการบันทึก/ดึงข้อมูลจาก PostgreSQL และคำนวณส่วนลดผ่าน Strategy Pattern
-    - **ส่วนที่ 2: Code Implementation & Explanation**
-        - โครงสร้าง Code พร้อมคำอธิบาย (Entity, Repository, Strategy Package, Service, Controller) โดยอธิบายการใช้ **Dependency Injection (Constructor Injection)** ในทุก Layer
-    - **ส่วนที่ 3: Web Application & Database Screenshots**
-        - 📌 **ข้อกำหนดสำคัญ:** ในขั้นตอนการเพิ่มเกมใหม่ **นักศึกษาต้องใส่รหัสนักศึกษาและ Section ของตนเอง** ลงในข้อมูลเกม (เช่น ในช่องชื่อเกม `Title` หรือแนวเกม `Genre` เช่น `Elden Ring (663380123-4 Sec 1)`)
-            ### ตัวอย่างการกรอกข้อมูล
-        * **ชื่อเกม (Title):** `Elden Ring (663380123-4 SEC 1)`
-        * **แนวเกม (Genre):** `Action RPG`
-        * **แพลตฟอร์ม (Platform):** `PC / PS5`
-        * **คะแนน (Rating):** `9.8`
-        * **ราคาปกติ (บาท):** `1790.00`
-        * **ส่วนลด (Strategy):** `ส่วนลดนักศึกษา (10%)` _(ระบบจะคำนวณราคาสุทธิอัตโนมัติเป็น 1,611.00 บาท)_(ให้ถ่ายภาพหน้าจอ)
-        * **ส่วนลด (Strategy):** `ส่วนลดเทศกาล (20%)` _(ระบบจะคำนวณราคาสุทธิอัตโนมัติเป็น 1,432.00 บาท)_(ให้ถ่ายภาพหน้าจอ)
-        * **วันวางจำหน่าย (Release Date):** `2022-02-25`
-        - หน้าจอเพิ่มเกมใหม่ (Create) ที่กำลังกรอกข้อมูลที่มีรหัสนักศึกษา + Section
-        - หน้าจอแสดงรายการเกมทั้งหมด (Read) ที่เห็นแถบแจ้งเตือนสีเขียวสำเร็จ และข้อมูลเกมที่มีรหัสนักศึกษาในตาราง
-        - หน้าจอแก้ไขเกม (Update) แสดงฟอร์มแก้ไขข้อมูลเกม
-        - หน้าจอยืนยันลบ + ผลลัพธ์หลังลบ (Delete)
-        - หน้าจอ Database (pgAdmin หรือ terminal `psql`) แสดงข้อมูลจริงในตาราง `games` ที่มีรหัสนักศึกษาบันทึกอยู่
+# รัน Spring Boot
+./mvnw spring-boot:run
+```
+
+### 6. เปิดเบราว์เซอร์
+
+```
+http://localhost:8080/games
+```
 
 ---
 
-<img width="1917" height="732" alt="image" src="https://github.com/user-attachments/assets/e806e760-6c6f-4c1d-bcbf-d6dfc231e7fa" />
-ตัวอย่าง http://localhost:8080/games
+## 📦 ฐานข้อมูล
 
-## 📊 เกณฑ์การให้คะแนน (Software Design Focused)
+### ตาราง `games`
 
-| หัวข้อ                                 | คะแนน    | รายละเอียด                                                                                                                              |
-| -------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| **Software Design Principles & SOLID** | 20%      | เขียนอธิบายหลักการออกแบบซอฟต์แวร์, GRASP Patterns, SOLID Principles (SRP, OCP, LSP, ISP, DIP) และ Layered Architecture ได้ถูกต้องชัดเจน |
-| **Strategy Pattern Implementation**    | 15%      | ออกแบบและสร้าง Strategy Pattern ในการคำนวณส่วนลดได้อย่างถูกต้อง สอดคล้องกับหลัก OCP และ DIP                                             |
-| **Entity / Model**                     | 10%      | สร้าง Entity ถูกต้องตามหลัก JPA,JBDC และ Object-Relational Mapping (ORM)                                                                |
-| **Repository & Data Access**           | 10%      | ออกแบบ Repository Interface และการจัดการ Data Access Layer ถูกต้อง                                                                      |
-| **Service Layer**                      | 10%      | สร้าง Service แยก Business Logic ออกจาก Controller เรียกใช้งาน Strategy Context และใช้ Constructor Injection ถูกต้อง                    |
-| **Controller & MVC Design**            | 15%      | ควบคุม Flow ด้วย Spring MVC, ใช้ Constructor Injection (DI) เรียกผ่าน Service Layer และทำ CRUD ครบ 4 ฟังก์ชัน                           |
-| **Database Connectivity**              | 10%      | เชื่อมต่อ PostgreSQL สำเร็จ ข้อมูลถูกจัดเก็บจริงในฐานข้อมูล                                                                             |
-| **PDF Report Quality**                 | 10%      | เล่มรายงานเรียบร้อย อธิบายแนวคิดการออกแบบและมีภาพประกอบครบถ้วน                                                                          |
-| **รวม**                                | **100%** |                                                                                                                                         |
+| Column          | Type         | Description                            |
+| --------------- | ------------ | -------------------------------------- |
+| `id`            | BIGINT       | Primary Key (Auto-increment)           |
+| `title`         | VARCHAR(255) | ชื่อเกม                                |
+| `genre`         | VARCHAR(255) | แนวเกม (Action, RPG, Adventure)        |
+| `platform`      | VARCHAR(255) | แพลตฟอร์ม (PC, PS5, Switch)            |
+| `rating`        | DOUBLE       | คะแนน (0.0 - 10.0)                     |
+| `release_date`  | DATE         | วันวางจำหน่าย                          |
+| `price`         | DOUBLE       | ราคาปกติ (บาท)                         |
+| `discount_type` | VARCHAR(50)  | ประเภทส่วนลด (NONE, STUDENT, SEASONAL) |
 
 ---
 
-> **หมายเหตุ:** นักศึกษาสามารถปรับแต่งหน้าเว็บเพิ่มเติมได้ตามต้องการ แต่ฟังก์ชัน CRUD และหลักการออกแบบต้องถูกต้องตามหลักการ Principles of Software Design
+## 🎨 หลักการออกแบบที่ใช้
+
+### 1. GRASP Patterns
+
+- ✅ **Controller Pattern** — `GameController` เป็นตัวกลางระหว่าง View และ Service
+- ✅ **Information Expert** — `GameService` มีข้อมูลและความรู้ในการคำนวณราคา
+- ✅ **Low Coupling** — Controller ไม่รู้จัก Repository โดยตรง
+- ✅ **High Cohesion** — แต่ละคลาสมีหน้าที่ชัดเจน
+- ✅ **Indirection** — `DiscountContext` เป็นตัวกลางในการเลือก Strategy
+
+### 2. SOLID Principles
+
+- ✅ **Single Responsibility (SRP)** — แต่ละคลาสมีหน้าที่เดียว
+- ✅ **Open/Closed (OCP)** — เพิ่ม Strategy ใหม่ได้โดยไม่แก้โค้ดเดิม
+- ✅ **Liskov Substitution (LSP)** — Strategy ทุกตัวแทนที่กันได้
+- ✅ **Interface Segregation (ISP)** — Interface กะทัดรัด
+- ✅ **Dependency Inversion (DIP)** — ใช้ Constructor Injection ทุก Layer
+
+### 3. Strategy Pattern
+
+```
+DiscountStrategy (Interface)
+    ├── NoDiscountStrategy      (0%)
+    ├── StudentDiscountStrategy (10%)
+    ├── SeasonalSaleStrategy    (20%)
+    ├── DiscountContext → เลือก Strategy ที่เหมาะสม
+    └── GameService → เรียกใช้ผ่าน Context
+```
+
+**ประโยชน์:**
+
+- เพิ่มส่วนลดรูปแบบใหม่ได้ง่าย (OCP)
+- แยก algorithm ออกเป็นคลาสย่อย
+- ทดสอบแต่ละ Strategy แยกกันได้
+
+---
+
+## 🔄 Execution Flow
+
+### ตัวอย่าง: เพิ่มเกมใหม่
+
+```
+1. Browser → POST /games/save (Form Data)
+2. GameController.saveGame()
+3. GameService.saveGame()
+4. GameService.calculateFinalPrice()
+5. DiscountContext.getStrategy("STUDENT")
+6. StudentDiscountStrategy.calculatePrice(1790.0)
+7. Return 1611.0 (ลด 10%)
+8. GameRepository.save(game)
+9. PostgreSQL → INSERT INTO games...
+10. Redirect → GET /games
+11. GameService.getAllGamesWithFinalPrice()
+12. Thymeleaf Template → แสดงรายการ + Success Message
+```
+
+---
+
+## 🧪 การทดสอบ
+
+### ข้อมูลตัวอย่างสำหรับทดสอบ
+
+**ข้อมูลเริ่มต้น (Create):**
+
+| Field            | Value                                  |
+| ---------------- | -------------------------------------- |
+| **Title**        | `673380073-7 SEC 2`                    |
+| **Genre**        | `Action Code`                          |
+| **Platform**     | `PC`                                   |
+| **Rating**       | `10`                                   |
+| **Price**        | `9999.00`                              |
+| **Discount**     | `STUDENT` (10%) → ราคาสุทธิ: 8999.10 ฿ |
+| **Release Date** | `02/02/2222`                           |
+
+**ข้อมูลหลังแก้ไข (Update):**
+
+| Field            | Value                                   |
+| ---------------- | --------------------------------------- |
+| **Title**        | `673380073-7 SEC 2 naja`                |
+| **Genre**        | `Action Code RPG Open World`            |
+| **Platform**     | `PC CONSOLE TERMINAL`                   |
+| **Rating**       | `10`                                    |
+| **Price**        | `9999.00`                               |
+| **Discount**     | `SEASONAL` (20%) → ราคาสุทธิ: 7999.20 ฿ |
+| **Release Date** | `02/02/2222`                            |
+
+### ทดสอบ Strategy Pattern
+
+| Discount Type | Original Price | Final Price | Calculation |
+| ------------- | -------------- | ----------- | ----------- |
+| NONE          | 9999.00 ฿      | 9999.00 ฿   | 9999 × 1.0  |
+| STUDENT       | 9999.00 ฿      | 8999.10 ฿   | 9999 × 0.9  |
+| SEASONAL      | 9999.00 ฿      | 7999.20 ฿   | 9999 × 0.8  |
+
+---
+
+## 📸 Screenshots
+
+ดูภาพหน้าจอทั้งหมดได้ที่: [`report/screenshots/`](report/screenshots/)
+
+1. **1.png** — หน้าฟอร์มเพิ่มเกมใหม่
+2. **2.png** — รายการเกม (ส่วนลดนักศึกษา 10%)
+3. **3.png** — รายการเกม (ส่วนลดเทศกาล 20%)
+4. **updated_data_form.png** — หน้าฟอร์มแก้ไข
+5. **6.updated.png** — รายการหลังแก้ไขสำเร็จ
+6. **delete_form.png** — หน้ายืนยันลบ
+7. **6.deleted.png** — รายการหลังลบสำเร็จ
+8. **6.db.png** — ข้อมูลจริงใน PostgreSQL
+
+---
+
+## 📝 เอกสารเพิ่มเติม
+
+- 📄 **รายงานฉบับสมบูรณ์:** [`report/Lab7_Report.md`](report/Lab7_Report.md)
+- 📄 **รายงานผล Lab:** [`Lab7_report.docx`]()
+- 📚 **คู่มือนักศึกษา:** [`STUDENT_GUIDE.md`](STUDENT_GUIDE.md)
+
+---
+
+## 🎓 ผู้จัดทำ
+
+**เพชรภิญโญ ธนศิรินรากร**  
+รหัสนักศึกษา: 673380073-7  
+Section: 2
+
+---
+
+## 📊 สรุปการประยุกต์ใช้หลักการออกแบบ
+
+| Principle              | Implementation          | Benefit       |
+| ---------------------- | ----------------------- | ------------- |
+| **Controller Pattern** | GameController          | Low Coupling  |
+| **Information Expert** | GameService             | High Cohesion |
+| **SRP**                | แต่ละคลาสมีหน้าที่เดียว | ชัดเจน        |
+| **OCP**                | เพิ่ม Strategy ได้ง่าย  | ขยายได้       |
+| **DIP**                | Constructor Injection   | ทดสอบง่าย     |
+| **Strategy Pattern**   | Discount Calculation    | ยืดหยุ่น      |
+
+---
+
+## 🏆 คะแนนที่คาดว่าจะได้
+
+| หัวข้อ                       | คะแนน    | สถานะ           |
+| ---------------------------- | -------- | --------------- |
+| Software Design & Principles | 20%      | ✅ เสร็จสมบูรณ์ |
+| Strategy Pattern             | 15%      | ✅ เสร็จสมบูรณ์ |
+| Entity/Model                 | 10%      | ✅ เสร็จสมบูรณ์ |
+| Repository                   | 10%      | ✅ เสร็จสมบูรณ์ |
+| Service Layer                | 10%      | ✅ เสร็จสมบูรณ์ |
+| Controller & MVC             | 15%      | ✅ เสร็จสมบูรณ์ |
+| Database Connectivity        | 10%      | ✅ เสร็จสมบูรณ์ |
+| PDF Report                   | 10%      | ✅ เสร็จสมบูรณ์ |
+| **รวม**                      | **100%** | ✅              |
+
+---
+
+## 📚 เทคโนโลยีและแนวคิดที่ใช้
+
+- ✅ Spring Boot — Rapid Application Development
+- ✅ Spring Data JPA — ORM และ Repository Pattern
+- ✅ PostgreSQL — Relational Database
+- ✅ Thymeleaf — Server-side Template Engine
+- ✅ Strategy Pattern — Behavioral Design Pattern
+- ✅ GRASP Patterns — Object-Oriented Design Principles
+- ✅ SOLID Principles — Clean Code Principles
+- ✅ MVC Architecture — Separation of Concerns
+- ✅ Dependency Injection — Inversion of Control
+
+---
+
+**© 2026 — Lab 7: Game Catalog CRUD Application**
