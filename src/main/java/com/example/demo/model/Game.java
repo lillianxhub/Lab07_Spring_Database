@@ -1,6 +1,13 @@
 package com.example.demo.model;
 
+import java.time.LocalDate;
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "games")
 public class Game {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String title;
     private String genre;
@@ -9,6 +16,9 @@ public class Game {
     private LocalDate releaseDate;
     private Double price;
     private String discountType;
+
+    public Game() {
+    }
 
     public Game(Long id, String title, String genre, String platform, Double rating, LocalDate releaseDate,
             Double price, String discountType) {
