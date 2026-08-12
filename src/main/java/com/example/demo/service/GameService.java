@@ -63,11 +63,40 @@ public class GameService {
 
         for (Game game : games) {
             Map<String, Object> gameData = new HashMap<>();
-            gameData.put("game", game);
+
+            gameData.put("id", game.getId());
+            gameData.put("title", game.getTitle());
+            gameData.put("genre", game.getGenre());
+            gameData.put("platform", game.getPlatform());
+            gameData.put("rating", game.getRating());
+            gameData.put("releaseDate", game.getReleaseDate());
+            gameData.put("price", game.getPrice());
+            gameData.put("discountType", game.getDiscountType());
+
             gameData.put("finalPrice", calculateFinalPrice(game));
+
+            String discountName = getDiscountName(game.getDiscountType());
+            gameData.put("discountName", discountName);
+
             result.add(gameData);
         }
 
         return result;
+    }
+
+    private String getDiscountName(String discountType) {
+        if (discountType == null) {
+            return "ราคาปกติ";
+        }
+
+        switch (discountType.toUpperCase()) {
+            case "SEASONAL":
+                return "ส่วนลดเทศกาล (20%)";
+            case "STUDENT":
+                return "ส่วนลดนักศึกษา (10%)";
+            case "NONE":
+            default:
+                return "ราคาปกติ";
+        }
     }
 }

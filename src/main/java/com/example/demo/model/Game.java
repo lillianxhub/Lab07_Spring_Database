@@ -2,6 +2,7 @@ package com.example.demo.model;
 
 import java.time.LocalDate;
 import jakarta.persistence.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
 @Table(name = "games")
@@ -13,7 +14,10 @@ public class Game {
     private String genre;
     private String platform;
     private Double rating;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate releaseDate;
+
     private Double price;
     private String discountType;
 

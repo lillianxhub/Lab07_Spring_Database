@@ -5,6 +5,7 @@ import com.example.demo.service.GameService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/games")
@@ -18,7 +19,7 @@ public class GameController {
 
     @GetMapping("")
     public String getAllGames(Model model) {
-        model.addAttribute("gamesWithPrices", gameService.getAllGamesWithFinalPrice());
+        model.addAttribute("games", gameService.getAllGamesWithFinalPrice());
         return "games/list";
     }
 
@@ -29,8 +30,9 @@ public class GameController {
     }
 
     @PostMapping("/save")
-    public String saveGame(Game game) {
+    public String saveGame(Game game, RedirectAttributes redirectAttributes) {
         gameService.saveGame(game);
+        redirectAttributes.addFlashAttribute("message", "เพิ่มเกม \"" + game.getTitle() + "\" สำเร็จ!");
         return "redirect:/games";
     }
 
@@ -41,8 +43,9 @@ public class GameController {
     }
 
     @PostMapping("/update/{id}")
-    public String updateGame(@PathVariable Long id, Game game) {
+    public String updateGame(@PathVariable Long id, Game game, RedirectAttributes redirectAttributes) {
         gameService.updateGame(id, game);
+        redirectAttributes.addFlashAttribute("message", "อัปเดตเกม \"" + game.getTitle() + "\" สำเร็จ!");
         return "redirect:/games";
     }
 
@@ -53,8 +56,11 @@ public class GameController {
     }
 
     @PostMapping("/delete/{id}")
-    public String deleteGame(@PathVariable Long id) {
+    public String deleteGame(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        Game game = gameService.getGameById(id);
+        String title = game.getTitle();
         gameService.deleteGame(id);
+        redirectAttributes.addFlashAttribute("message", "ลบเกม \"" + title + "\" สำเร็จ!");
         return "redirect:/games";
     }
 }
